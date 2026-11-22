@@ -8,16 +8,21 @@
 //
 // Locally, MAKEFUN_BOT_DIR and MAKEFUN_OUTPUT_DIR stand in for /bot and /output:
 //   mkdir -p out && MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
+// With MAKEFUN_OUTPUT_DIR unset the program writes to ./out instead of /output,
+// so a plain local run never touches the filesystem root.
 
 import { copyFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
 const botDir = process.env.MAKEFUN_BOT_DIR ?? "/bot";
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "./out";
 
 mkdirSync(outputDir, { recursive: true });
 try {
-  copyFileSync(join(botDir, "VIDEO.json"), join(outputDir, "VIDEO.json"));
+  const source = join(botDir, "VIDEO.json");
+  const target = join(outputDir, "VIDEO.json");
+  copyFileSync(source, target);
+  console.log(`copied VIDEO.json: ${source} -> ${target}`);
 } catch (err) {
   console.error(`could not copy VIDEO.json from ${botDir}: ${(err as Error).message}`);
   process.exit(1);
